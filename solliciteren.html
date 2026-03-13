@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solliciteren — Hasselt Roleplay</title>
+<link rel="stylesheet" href="hasselt.css">
+<style>
+
+/* ── PAGE LAYOUT ── */
+.soll-page{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  padding:80px 40px;
+}
+
+/* Background grid + orbs */
+.grid-bg{z-index:0}
+.orb{z-index:0}
+
+/* ── CLOSED CARD ── */
+.closed-card{
+  position:relative;z-index:2;
+  max-width:600px;width:100%;
+  background:var(--gray2);
+  border:1px solid rgba(255,110,180,0.18);
+  border-radius:24px;
+  padding:56px 48px;
+  text-align:center;
+  box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 60px rgba(255,110,180,0.05);
+  animation:fadeUp 1s 0.2s both;
+}
+
+/* top glow line */
+.closed-card::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(to right,transparent,rgba(255,110,180,0.5),transparent);
+  border-radius:50%;
+}
+
+/* Icon */
+.closed-icon{
+  width:80px;height:80px;border-radius:22px;
+  background:rgba(255,110,180,0.08);border:1px solid rgba(255,110,180,0.18);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 28px;
+  animation:iconPulse 3s ease-in-out infinite;
+}
+.closed-icon svg{width:36px;height:36px;color:var(--pink)}
+@keyframes iconPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,110,180,0)}
+  50%{box-shadow:0 0 30px 6px rgba(255,110,180,0.12)}
+}
+
+/* Status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,85,85,0.08);border:1px solid rgba(255,85,85,0.25);
+  border-radius:50px;padding:5px 16px;margin-bottom:22px;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;
+  letter-spacing:3px;text-transform:uppercase;color:#ff5555;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#ff5555;
+  animation:blink 2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.8)}}
+
+/* Title */
+.closed-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(42px,7vw,72px);
+  line-height:0.9;letter-spacing:4px;
+  background:linear-gradient(180deg,#fff 30%,#555);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:18px;
+}
+
+/* Divider line */
+.closed-divider{
+  width:60px;height:1px;
+  background:linear-gradient(to right,transparent,rgba(255,110,180,0.4),transparent);
+  margin:0 auto 24px;
+}
+
+/* Body text */
+.closed-text{
+  font-size:0.95rem;color:var(--text-muted);line-height:1.8;
+  margin-bottom:32px;
+}
+.closed-text strong{color:var(--white)}
+
+/* Info boxes */
+.closed-info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:36px;
+}
+.info-box{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:14px;padding:16px;text-align:left;
+}
+.info-box-icon{
+  width:30px;height:30px;border-radius:9px;
+  background:rgba(95,217,245,0.08);
+  display:flex;align-items:center;justify-content:center;margin-bottom:10px;
+}
+.info-box-icon svg{width:14px;height:14px;color:var(--cyan)}
+.info-box-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;
+  letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:4px;
+}
+.info-box-value{
+  font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;
+  letter-spacing:1px;color:#888;line-height:1.5;
+}
+
+/* CTA discord button */
+.discord-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--text-muted);text-decoration:none;
+  padding:12px 28px;border-radius:50px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.discord-btn svg{width:15px;height:15px;flex-shrink:0}
+.discord-btn:hover{color:var(--white);border-color:rgba(95,217,245,0.3);background:rgba(95,217,245,0.06)}
+
+/* Floating particles are from hasselt.css base */
+.particles{position:absolute;inset:0;pointer-events:none;z-index:1}
+.particle{position:absolute;width:2px;height:2px;border-radius:50%;animation:particleDrift linear infinite}
+
+@media(max-width:560px){
+  .closed-card{padding:36px 24px}
+  .closed-info-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">HASSELT RP</a>
+  <ul class="nav-links">
+    <li><a href="index.html#over">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Over Ons
+    </a></li>
+    <li><a href="regels.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Regels
+    </a></li>
+    <li><a href="kaart.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Kaart
+    </a></li>
+    <li><a href="faq.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ
+    </a></li>
+    <li><a href="solliciteren.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8l2 2 4-4"/></svg>Solliciteren
+    </a></li>
+  </ul>
+  <button class="nav-burger" id="navBurger" aria-label="Menu" onclick="toggleMobileNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html#over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Over Ons</a>
+  <a href="regels.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Regels</a>
+  <a href="kaart.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Kaart</a>
+  <a href="faq.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ</a>
+  <a href="solliciteren.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8l2 2 4-4"/></svg>Solliciteren</a>
+</div>
+
+
+<!-- MAIN -->
+<div class="soll-page">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="grid-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="closed-card">
+
+    <div class="closed-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        <line x1="12" y1="12" x2="12" y2="16"/>
+        <line x1="10" y1="14" x2="14" y2="14"/>
+      </svg>
+    </div>
+
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      Momenteel Gesloten
+    </div>
+
+    <h1 class="closed-title">SOLLICITATIES<br>GESLOTEN</h1>
+
+    <div class="closed-divider"></div>
+
+    <p class="closed-text">
+      Bedankt voor je interesse in <strong>Hasselt Roleplay</strong>. Op dit moment zijn de sollicitaties nog niet open. Houd onze Discord server in de gaten voor aankondigingen wanneer er nieuwe posities beschikbaar komen.
+    </p>
+
+    <div class="closed-info-grid">
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="info-box-label">Status</div>
+        <div class="info-box-value">Nog niet open — binnenkort meer info</div>
+      </div>
+      <div class="info-box">
+        <div class="info-box-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div class="info-box-label">Updates</div>
+        <div class="info-box-value">Volg onze Discord voor aankondigingen</div>
+      </div>
+    </div>
+
+    <a href="https://discord.gg/8Bjr7KPgTy" target="_blank" rel="noopener" class="discord-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Ga naar onze Discord
+    </a>
+
+  </div>
+</div>
+
+<script>
+  // Particles
+  const pc = document.getElementById('particles');
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const x = Math.random() * 100;
+    const dur = 10 + Math.random() * 14;
+    const delay = -Math.random() * 24;
+    const drift = (Math.random() - 0.5) * 80 + 'px';
+    const col = Math.random() > 0.5 ? 'rgba(255,110,180,0.45)' : 'rgba(95,217,245,0.45)';
+    p.style.cssText = `left:${x}%;background:${col};--drift:${drift};animation-duration:${dur}s;animation-delay:${delay}s;`;
+    pc.appendChild(p);
+  }
+</script>
+</body>
+</html>
