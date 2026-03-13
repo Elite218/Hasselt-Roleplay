@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaart — Hasselt Roleplay</title>
+<link rel="stylesheet" href="hasselt.css">
+<style>
+/* PAGE HEADER */
+.page-header{padding:130px 60px 50px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(95,217,245,0.06),transparent);pointer-events:none}
+.header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap;animation:fadeUp 0.9s cubic-bezier(0.23,1,0.32,1) both}
+.page-label{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:5px;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.page-label::before{content:'';width:28px;height:1px;background:var(--cyan)}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7vw,100px);line-height:0.9;letter-spacing:4px;background:linear-gradient(180deg,#fff 40%,#666);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-title span{background:linear-gradient(135deg,var(--pink),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{margin-top:16px;font-size:0.95rem;color:var(--text-muted);line-height:1.7;max-width:440px}
+/* FILTERS */
+.zone-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-right:4px}
+.filter-pill{display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;padding:7px 16px;border-radius:50px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);cursor:pointer;transition:all 0.3s;user-select:none}
+.filter-pill svg{width:11px;height:11px}
+.filter-pill:hover{color:var(--white);border-color:rgba(255,255,255,0.2)}
+.filter-pill.active-police{background:rgba(255,110,180,0.12);border-color:rgba(255,110,180,0.4);color:var(--pink)}
+.filter-pill.active-medical{background:rgba(95,217,245,0.1);border-color:rgba(95,217,245,0.35);color:var(--cyan)}
+.filter-pill.active-criminal{background:rgba(255,80,80,0.1);border-color:rgba(255,80,80,0.35);color:#ff6060}
+.filter-pill.active-civilian{background:rgba(180,255,120,0.08);border-color:rgba(180,255,120,0.3);color:#aaee66}
+.filter-pill.active-all{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25);color:var(--white)}
+/* MAP */
+.map-section{padding:0 60px 100px}
+.map-outer{max-width:1300px;margin:0 auto;animation:fadeUp 0.9s 0.2s cubic-bezier(0.23,1,0.32,1) both}
+.map-frame{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(95,217,245,0.15);box-shadow:0 0 0 1px rgba(255,110,180,0.06),0 40px 120px rgba(0,0,0,0.8),inset 0 0 120px rgba(0,0,0,0.4)}
+.map-frame::before{content:'';position:absolute;inset:0;z-index:5;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.065) 2px,rgba(0,0,0,0.065) 4px);pointer-events:none;border-radius:16px}
+.map-frame::after{content:'';position:absolute;inset:0;z-index:4;background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 50%,rgba(0,0,0,0.5) 100%);pointer-events:none;border-radius:16px}
+.map-corner{position:absolute;width:28px;height:28px;z-index:10;pointer-events:none}
+.map-corner.tl{top:14px;left:14px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.map-corner.tr{top:14px;right:14px;border-top:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+.map-corner.bl{bottom:14px;left:14px;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.map-corner.br{bottom:14px;right:14px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+.scan-beam{position:absolute;left:0;right:0;height:3px;z-index:6;background:linear-gradient(to right,transparent,rgba(95,217,245,0.4),transparent);animation:scanBeam 5s linear infinite;pointer-events:none;top:0}
+@keyframes scanBeam{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
+.map-img{display:block;width:100%;height:auto;border-radius:16px;filter:saturate(1.1) contrast(1.05)}
+.map-hud-tl,.map-hud-br{position:absolute;z-index:10;font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:rgba(95,217,245,0.4);pointer-events:none;line-height:1.8}
+.map-hud-tl{top:18px;left:18px}
+.map-hud-br{bottom:18px;right:18px;text-align:right}
+/* PINS */
+.pins-layer{position:absolute;inset:0;z-index:8;pointer-events:none}
+.pin{position:absolute;pointer-events:all;cursor:pointer;transform:translate(-50%,-100%);transition:transform 0.25s cubic-bezier(0.23,1,0.32,1)}
+.pin:hover{transform:translate(-50%,-100%) scale(1.3)}
+.pin.hidden{opacity:0;pointer-events:none;transition:opacity 0.3s}
+.pin-dot{width:14px;height:14px;border-radius:50%;position:relative;z-index:2;border:2px solid rgba(255,255,255,0.8);box-shadow:0 0 12px currentColor,0 0 24px currentColor;animation:pinPulse 2.5s ease-in-out infinite}
+.pin-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;border:1.5px solid currentColor;opacity:0.5;animation:ringExpand 2.5s ease-out infinite}
+.pin-ring-2{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;border:1px solid currentColor;opacity:0.3;animation:ringExpand 2.5s ease-out infinite 0.8s}
+@keyframes pinPulse{0%,100%{box-shadow:0 0 12px currentColor,0 0 24px currentColor}50%{box-shadow:0 0 20px currentColor,0 0 40px currentColor,0 0 60px currentColor}}
+@keyframes ringExpand{0%{width:14px;height:14px;opacity:0.7}100%{width:46px;height:46px;opacity:0}}
+.pin-needle{width:2px;height:12px;background:linear-gradient(to bottom,currentColor,transparent);margin:0 auto}
+.pin.police .pin-dot,.pin.police{color:var(--pink)}.pin.police .pin-dot{background:var(--pink)}
+.pin.medical .pin-dot,.pin.medical{color:var(--cyan)}.pin.medical .pin-dot{background:var(--cyan)}
+.pin.criminal .pin-dot,.pin.criminal{color:#ff5555}.pin.criminal .pin-dot{background:#ff5555}
+.pin.civilian .pin-dot,.pin.civilian{color:#aaee66}.pin.civilian .pin-dot{background:#aaee66}
+/* TOOLTIP */
+.tooltip{position:absolute;z-index:20;background:rgba(10,10,14,0.96);border-radius:12px;padding:18px 20px;width:220px;pointer-events:none;opacity:0;transform:translateY(8px) scale(0.96);transition:opacity 0.25s,transform 0.25s cubic-bezier(0.23,1,0.32,1);border:1px solid rgba(255,255,255,0.07);box-shadow:0 20px 60px rgba(0,0,0,0.7);backdrop-filter:blur(20px)}
+.tooltip.visible{opacity:1;transform:translateY(0) scale(1)}
+.tooltip-cat{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.tooltip-cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tooltip-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;margin-bottom:8px;line-height:1.1}
+.tooltip-desc{font-size:0.78rem;color:#555;line-height:1.6;margin-bottom:10px}
+.tooltip-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tooltip-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:50px;background:rgba(255,255,255,0.05);color:#444}
+/* SIDE PANEL */
+.info-panel{position:absolute;right:20px;top:20px;bottom:20px;width:280px;background:rgba(8,8,8,0.92);border:1px solid rgba(255,255,255,0.065);border-radius:14px;backdrop-filter:blur(24px);z-index:15;padding:24px;overflow-y:auto;transform:translateX(310px);transition:transform 0.5s cubic-bezier(0.23,1,0.32,1)}
+.info-panel.open{transform:translateX(0)}
+.info-panel::-webkit-scrollbar{width:3px}
+.info-panel::-webkit-scrollbar-thumb{background:rgba(95,217,245,0.3);border-radius:2px}
+.panel-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;color:var(--text-muted)}
+.panel-close:hover{background:rgba(255,110,180,0.12);color:var(--pink)}
+.panel-close svg{width:12px;height:12px}
+.panel-cat{font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.panel-cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.panel-name{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;line-height:1;margin-bottom:12px}
+.panel-divider{height:1px;background:linear-gradient(to right,rgba(255,255,255,0.08),transparent);margin:14px 0}
+.panel-desc{font-size:0.82rem;color:#5a5a5a;line-height:1.75;margin-bottom:14px}
+.panel-section-title{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#3a3a3a;margin-bottom:10px}
+.panel-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.panel-list li{display:flex;align-items:center;gap:9px;font-size:0.8rem;color:#4a4a4a}
+.panel-list li::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.panel-police .panel-cat,.panel-police .panel-name{color:var(--pink)}.panel-police .panel-cat-dot,.panel-police .panel-list li::before{background:var(--pink)}
+.panel-medical .panel-cat,.panel-medical .panel-name{color:var(--cyan)}.panel-medical .panel-cat-dot,.panel-medical .panel-list li::before{background:var(--cyan)}
+.panel-criminal .panel-cat,.panel-criminal .panel-name{color:#ff5555}.panel-criminal .panel-cat-dot,.panel-criminal .panel-list li::before{background:#ff5555}
+.panel-civilian .panel-cat,.panel-civilian .panel-name{color:#aaee66}.panel-civilian .panel-cat-dot,.panel-civilian .panel-list li::before{background:#aaee66}
+/* LEGEND */
+.legend{max-width:1300px;margin:24px auto 0;display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:0 4px}
+.legend-item{display:flex;align-items:center;gap:8px;cursor:pointer}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.legend-dot.police{background:var(--pink);box-shadow:0 0 8px var(--pink)}
+.legend-dot.medical{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.legend-dot.criminal{background:#ff5555;box-shadow:0 0 8px #ff5555}
+.legend-dot.civilian{background:#aaee66;box-shadow:0 0 8px #aaee66}
+.legend-text{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);transition:color 0.2s}
+.legend-item:hover .legend-text{color:var(--white)}
+.legend-sep{width:1px;height:16px;background:rgba(255,255,255,0.08)}
+@media(max-width:900px){
+  .page-header{padding-left:20px;padding-right:20px;padding-top:80px;padding-bottom:32px}
+  .map-section{padding-left:16px;padding-right:16px;padding-bottom:24px}
+  .info-panel{
+    position:fixed;
+    width:calc(100% - 32px);left:16px;right:16px;bottom:16px;top:auto;
+    max-height:50vh;overflow-y:auto;border-radius:18px;
+  }
+  .map-frame{height:calc(100vh - 57px - 60px);min-height:300px}
+  .map-hud-label{font-size:0.5rem}
+  .legend{flex-direction:row;flex-wrap:wrap;gap:10px}
+  .location-count{font-size:0.6rem}
+}
+@media(max-width:480px){
+  .page-header h1{font-size:clamp(28px,8vw,48px)}
+  .map-frame{height:55vw;min-height:240px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">HASSELT RP</a>
+  <ul class="nav-links">
+    <li><a href="index.html#over">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Over Ons
+    </a></li>
+    <li><a href="regels.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Regels
+    </a></li>
+    <li><a href="kaart.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Kaart
+    </a></li>
+    <li><a href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ
+    </a></li>
+    <li><a href="solliciteren.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8l2 2 4-4"/></svg>Solliciteren
+    </a></li>
+  </ul>
+  <button class="nav-burger" id="navBurger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html#over"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Over Ons</a>
+  <a href="regels.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Regels</a>
+  <a href="kaart.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Kaart</a>
+  <a href="faq.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ</a>
+  <a href="solliciteren.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8l2 2 4-4"/></svg>Solliciteren</a>
+</div>
+
+
+<div class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="page-label">Interactieve Kaart</div>
+      <h1 class="page-title">LOS SANTOS<br><span>&amp;</span> BLAINE COUNTY</h1>
+      <p class="page-sub">Bekijk de officiële politiebureaus van Los Santos & Blaine County. Klik op een pin voor meer informatie over het bureau.</p>
+    </div>
+  </div>
+</div>
+
+<div class="map-section">
+  <div class="map-outer">
+    <div class="map-frame" id="mapFrame">
+      <div class="map-corner tl"></div><div class="map-corner tr"></div>
+      <div class="map-corner bl"></div><div class="map-corner br"></div>
+      <div class="scan-beam"></div>
+      <div class="map-hud-tl">HASSELT RP // MAP v1.0<br>BLAINE COUNTY · LOS SANTOS</div>
+      <div class="map-hud-br">KLIK OP EEN LOCATIE<br>VOOR MEER INFO</div>
+      <img class="map-img" src="map.png" alt="GTA 5 Map" id="mapImg"/>
+      <div class="pins-layer" id="pinsLayer">
+        <!-- LSPD Mission Row — Downtown LS -->
+        <div class="pin police" data-id="pd-main" style="left:38.5%;top:76%"><div class="pin-ring"></div><div class="pin-ring-2"></div><div class="pin-dot"></div><div class="pin-needle"></div></div>
+        <!-- Sandy Shores Sheriff -->
+        <div class="pin police" data-id="pd-sandy" style="left:65%;top:38%"><div class="pin-ring"></div><div class="pin-ring-2"></div><div class="pin-dot"></div><div class="pin-needle"></div></div>
+        <!-- Paleto Bay Sheriff -->
+        <div class="pin police" data-id="pd-paleto" style="left:28%;top:9%"><div class="pin-ring"></div><div class="pin-ring-2"></div><div class="pin-dot"></div><div class="pin-needle"></div></div>
+      </div>
+      <div class="tooltip" id="tooltip">
+        <div class="tooltip-cat"><div class="tooltip-cat-dot"></div><span id="tt-cat"></span></div>
+        <div class="tooltip-name" id="tt-name"></div>
+        <div class="tooltip-desc" id="tt-desc"></div>
+        <div class="tooltip-tags" id="tt-tags"></div>
+      </div>
+      <div class="info-panel" id="infoPanel">
+        <div class="panel-close" onclick="closePanel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+        <div class="panel-cat"><div class="panel-cat-dot" id="p-dot"></div><span id="p-cat"></span></div>
+        <div class="panel-name" id="p-name"></div>
+        <div class="panel-divider"></div>
+        <div class="panel-desc" id="p-desc"></div>
+        <div class="panel-section-title">Activiteiten</div>
+        <ul class="panel-list" id="p-list"></ul>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot police"></div><span class="legend-text">Politiebureau</span></div>
+      <div class="legend-sep"></div>
+      <span class="legend-text" style="color:#2a2a2a;font-size:0.65rem">3 LOCATIES</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+<footer class="footer-strip">
+  <div class="footer-logo">HASSELT RP</div>
+  <div class="footer-text">© 2024 HASSELT ROLEPLAY · ALLE RECHTEN VOORBEHOUDEN</div>
+  <div class="footer-text" style="color:#222">MEER PAGINA'S BINNENKORT</div>
+</footer>
+
+<script>
+const locations={
+  'pd-main':{type:'police',cat:'Politiebureau',name:'LSPD — MISSION ROW',desc:'Het centrale hoofdkantoor van de Los Santos Police Department in het hart van de stad. Alle grote operaties worden van hieruit gecoördineerd.',tags:['24/7 Bemand','Detentiecel','Wapenopslag'],items:['Arrestatie & verhoor procedures','Voertuigenpool & helikopter','Communicatiecentrum','Rechtbankcoördinatie']},
+  'pd-sandy':{type:'police',cat:'Sheriffkantoor',name:'SANDY SHORES SHERIFF',desc:'Het sheriffkantoor van Blaine County dat toezicht houdt over Sandy Shores en de uitgestrekte woestijngebieden ten oosten van de stad.',tags:['Blaine County','Desert Patrol','Sheriff'],items:['Patrouillegebied: woestijn & snelweg','Bekende criminelen in de regio','Samenwerking met LSPD','Motorunit beschikbaar']},
+  'pd-paleto':{type:'police',cat:'Sheriffkantoor',name:'PALETO BAY SHERIFF',desc:'De noordelijkste uitpost van de ordediensten. Bewaakt de kustlijn van Paleto Bay en de bergpassen richting Chiliad.',tags:['Noord Blaine','Kustgebied','Sheriff'],items:['Nautische patrouilleboot','Bergredding coördinatie','Grenscontrole noordelijke routes','Back-up voor LSPD operaties']}
+};
+const catColors={police:'#FF6EB4'};
+const catLabels={police:'Politie'};
+const tooltip=document.getElementById('tooltip');
+let ttTimeout;
+document.querySelectorAll('.pin').forEach(pin=>{
+  pin.addEventListener('mouseenter',e=>{
+    clearTimeout(ttTimeout);
+    const id=pin.dataset.id,loc=locations[id];if(!loc)return;
+    const col=catColors[loc.type];
+    document.getElementById('tt-cat').textContent=catLabels[loc.type];
+    document.getElementById('tt-cat').style.color=col;
+    document.querySelector('.tooltip-cat-dot').style.background=col;
+    document.getElementById('tt-name').textContent=loc.name;
+    document.getElementById('tt-name').style.color=col;
+    document.getElementById('tt-desc').textContent=loc.desc.substring(0,90)+'...';
+    document.getElementById('tt-tags').innerHTML=loc.tags.map(t=>`<span class="tooltip-tag">${t}</span>`).join('');
+    const frame=document.getElementById('mapFrame'),fr=frame.getBoundingClientRect(),pr=pin.getBoundingClientRect();
+    let left=pr.left-fr.left+pr.width/2,top=pr.top-fr.top-14;
+    if(left+230>fr.width-10)left-=240;if(left<10)left=10;
+    tooltip.style.left=left+'px';tooltip.style.top=top+'px';
+    tooltip.style.transform='translateY(-100%) scale(1)';
+    tooltip.classList.add('visible');
+  });
+  pin.addEventListener('mouseleave',()=>{ttTimeout=setTimeout(()=>tooltip.classList.remove('visible'),200)});
+  pin.addEventListener('click',e=>{e.stopPropagation();const loc=locations[pin.dataset.id];if(loc)openPanel(loc)});
+});
+function openPanel(loc){
+  const col=catColors[loc.type],panel=document.getElementById('infoPanel');
+  panel.className='info-panel open panel-'+loc.type;
+  document.getElementById('p-dot').style.cssText=`background:${col};box-shadow:0 0 10px ${col}`;
+  document.getElementById('p-cat').textContent=catLabels[loc.type];
+  document.getElementById('p-cat').style.color=col;
+  document.getElementById('p-name').textContent=loc.name;
+  document.getElementById('p-desc').textContent=loc.desc;
+  document.getElementById('p-list').innerHTML=loc.items.map(i=>`<li>${i}</li>`).join('');
+}
+function closePanel(){document.getElementById('infoPanel').classList.remove('open')}
+document.getElementById('mapFrame').addEventListener('click',e=>{if(!e.target.closest('.pin')&&!e.target.closest('.info-panel'))closePanel()});
+</script>
+<script>
+(function(){
+  var burger = document.getElementById('navBurger');
+  var menu   = document.getElementById('navMobile');
+  if(!burger || !menu) return;
+
+  burger.addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = menu.classList.contains('open');
+    if(open){
+      menu.classList.remove('open');
+      burger.classList.remove('open');
+      document.body.style.overflow = '';
+    } else {
+      menu.classList.add('open');
+      burger.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function(e){
+    if(menu.classList.contains('open') && !menu.contains(e.target) && !burger.contains(e.target)){
+      menu.classList.remove('open');
+      burger.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Close when a nav link is tapped
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      menu.classList.remove('open');
+      burger.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+})();
+</script>
+</body>
+</html>
